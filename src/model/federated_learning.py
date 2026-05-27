@@ -113,7 +113,14 @@ class FederatedServer:
         """
         Aggregates local updates from multiple clients using Federated Averaging (FedAvg)
         and performs a global gradient descent update step.
+
+        Args:
+            client_updates_list: List of dicts containing {item_title: update_vector}
         """
+        if not client_updates_list:
+            logger.warning("aggregate_updates called with empty client_updates_list")
+            return
+
         aggregated_updates = {title: [] for title in self.item_list}
 
         # Gather updates for each item
