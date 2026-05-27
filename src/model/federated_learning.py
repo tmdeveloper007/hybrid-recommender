@@ -17,13 +17,24 @@ logger = logging.getLogger(__name__)
 class FederatedClient:
     """
     Represents a decentralized client node (user).
-    Holds local private interaction data and performs local computations.
+
+    In federated learning, each client holds their private interaction data
+    locally and only shares model updates (gradients) with the central server.
+    This preserves user privacy while enabling collaborative model training.
+
+    Attributes:
+        user_id: Unique client identifier
+        private_ratings: Dict of {item_title: rating} representing user's private history
+        user_factor: Computed local user latent factor vector
     """
 
     def __init__(self, user_id: str, private_ratings: dict):
         """
-        user_id: Unique client identifier.
-        private_ratings: Dict of {item_title: rating} representing user's history.
+        Initialize a federated client with private ratings data.
+
+        Args:
+            user_id: Unique client identifier
+            private_ratings: Dict of {item_title: rating} representing user's history
         """
         self.user_id = user_id
         self.private_ratings = private_ratings
@@ -35,6 +46,15 @@ class FederatedClient:
         """
         Computes the client's local user vector (latent factor) using Ridge Regression
         over the global item factors and the client's private ratings.
+
+        Args:
+            global_item_factors: Global item factor matrix from server
+            title_to_idx: Mapping of item titles to matrix indices
+            n_factors: Number of latent factors
+            reg: Regularization strength (default: 0.05)
+
+        Returns:
+            User factor vector of shape (n_factors,)
         """
         rated_titles = [t for t in self.private_ratings if t in title_to_idx]
         if not rated_titles:
@@ -87,14 +107,20 @@ class FederatedServer:
     """
     Central coordinator that aggregates updates from client nodes
     and updates the global collaborative model parameters.
+
+    The server initializes global item factors and coordinates the federated
+    learning process by receiving and aggregating client-side updates.
     """
 
     def __init__(self, item_list: list, n_factors: int = 20, learning_rate: float = 0.05, reg: float = 0.05):
         """
-        item_list: List of all unique item titles.
-        n_factors: Number of SVD latent dimensions.
-        learning_rate: Global learning rate for updating item factors.
-        reg: Regularization strength.
+        Initialize the federated server with item list and hyperparameters.
+
+        Args:
+            item_list: List of all unique item titles
+            n_factors: Number of SVD latent dimensions (default: 20)
+            learning_rate: Global learning rate for updating item factors (default: 0.05)
+            reg: Regularization strength (default: 0.05)
         """
         self.item_list = item_list
         self.n_factors = n_factors
@@ -102,7 +128,7 @@ class FederatedServer:
         self.reg = reg
 
         self.title_to_idx = {t: i for i, t in enumerate(self.item_list)}
-        
+
         # Initialize global item factors randomly
         np.random.seed(42)
         self.global_item_factors = np.random.normal(
