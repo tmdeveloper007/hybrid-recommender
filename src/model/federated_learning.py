@@ -141,9 +141,24 @@ def train_federated_collaborative_model(
 ) -> CollaborativeRecommender:
     """
     Simulates federated training of a CollaborativeRecommender model.
-    1. Splits interaction data into decentralized local private client datasets.
-    2. Runs federated learning epochs with local updates and server-side aggregation.
-    3. Returns a fully populated CollaborativeRecommender instance.
+
+    This function:
+    1. Splits interaction data into decentralized local private client datasets
+    2. Runs federated learning epochs with local updates and server-side aggregation
+    3. Returns a fully populated CollaborativeRecommender instance
+
+    Args:
+        interaction_df: DataFrame with columns [user_id, title, rating]
+        n_factors: Number of latent factors for SVD (default: 20)
+        epochs: Number of federated learning rounds (default: 5)
+        lr: Learning rate for server aggregation (default: 0.05)
+        reg: Regularization strength (default: 0.05)
+
+    Returns:
+        CollaborativeRecommender: Trained recommender with federated item factors
+
+    Raises:
+        ValueError: If interaction_df is empty
     """
     if interaction_df.empty:
         raise ValueError("Cannot train on empty DataFrame.")
