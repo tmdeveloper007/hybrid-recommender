@@ -32,7 +32,15 @@ def analyze_sentiment(text: str) -> float:
 
 
 def sentiment_label(score: float) -> str:
-    """Convert a compound score to a human-readable label."""
+    """
+    Convert a compound VADER score to a human-readable label.
+
+    Args:
+        score: VADER compound score in range [-1.0, 1.0]
+
+    Returns:
+        'positive' if score >= 0.05, 'negative' if score <= -0.05, else 'neutral'
+    """
     if score >= 0.05:
         return 'positive'
     elif score <= -0.05:
@@ -44,7 +52,13 @@ def sentiment_label(score: float) -> str:
 def batch_analyze(df: pd.DataFrame, text_col: str = 'review_text') -> pd.DataFrame:
     """
     Add sentiment_score and sentiment_label columns to the DataFrame.
-    Operates on the specified text column.
+
+    Args:
+        df: Input DataFrame
+        text_col: Name of the text column to analyze (default: 'review_text')
+
+    Returns:
+        DataFrame with added 'sentiment_score' and 'sentiment_label' columns
     """
     df = df.copy()
     if text_col not in df.columns:
@@ -60,7 +74,13 @@ def batch_analyze(df: pd.DataFrame, text_col: str = 'review_text') -> pd.DataFra
 def aggregate_sentiment_by_item(df: pd.DataFrame, item_col: str = 'title') -> pd.DataFrame:
     """
     Compute average sentiment score per unique item.
-    Returns a DataFrame with columns: [item_col, 'avg_sentiment', 'review_count'].
+
+    Args:
+        df: DataFrame with 'sentiment_score' column (or will be computed)
+        item_col: Column name to group by (default: 'title')
+
+    Returns:
+        DataFrame with columns: [item_col, 'avg_sentiment', 'review_count']
     """
     if 'sentiment_score' not in df.columns:
         df = batch_analyze(df)
