@@ -14,7 +14,15 @@ def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def remove_duplicates(df: pd.DataFrame) -> pd.DataFrame:
-    """Remove duplicate rows and reset index."""
+    """
+    Remove duplicate rows and reset index.
+
+    Args:
+        df: Input DataFrame
+
+    Returns:
+        DataFrame with duplicates removed and reset index
+    """
     return df.drop_duplicates().reset_index(drop=True)
 
 
@@ -22,7 +30,16 @@ def normalize_ratings(
     df: pd.DataFrame,
     column: str = 'rating'
 ) -> pd.DataFrame:
-    """Normalize rating column to 0-1 scale."""
+    """
+    Normalize rating column to 0-1 scale using MinMaxScaler.
+
+    Args:
+        df: Input DataFrame
+        column: Name of the rating column to normalize
+
+    Returns:
+        DataFrame with normalized rating column added
+    """
     df = df.copy()
     if column in df.columns:
         scaler = MinMaxScaler()
@@ -34,7 +51,16 @@ def encode_categorical(
     df: pd.DataFrame,
     columns: list = None
 ) -> pd.DataFrame:
-    """Label encode categorical columns."""
+    """
+    Label encode categorical columns.
+
+    Args:
+        df: Input DataFrame
+        columns: List of column names to encode. If None, defaults to ['authors'].
+
+    Returns:
+        DataFrame with encoded columns
+    """
     df = df.copy()
     if columns is None:
         columns = ['authors']
@@ -62,17 +88,17 @@ def preprocess_books_data(df: pd.DataFrame) -> pd.DataFrame:
     - Encode categorical columns
     - Normalize ratings from 1-5 to 0-1 scale
 
+    Args:
+        df: Input books DataFrame
+
     Returns:
         Cleaned pandas DataFrame
     """
-    print(f'Original shape: {df.shape}')
     df = remove_duplicates(df)
-    print(f'After removing duplicates: {df.shape}')
     df = handle_missing_values(df)
     df = encode_categorical(df, ['authors', 'publisher'])
     if 'rating' in df.columns:
         df = normalize_ratings(df, 'rating')
-    print(f'Final shape: {df.shape}')
     return df
 
 
@@ -85,19 +111,19 @@ def preprocess_ratings_data(df: pd.DataFrame) -> pd.DataFrame:
     - Handle missing values
     - Normalize ratings from 1-5 to 0-1 scale
 
+    Args:
+        df: Input ratings DataFrame
+
     Returns:
         Cleaned pandas DataFrame
     """
-    print(f'Original shape: {df.shape}')
     if 'user_id' in df.columns and 'book_id' in df.columns:
         df = df.drop_duplicates(subset=['user_id', 'book_id'])
     else:
         df = df.drop_duplicates()
-    print(f'After removing duplicates: {df.shape}')
     df = handle_missing_values(df)
     if 'rating' in df.columns:
         df = normalize_ratings(df, 'rating')
-    print(f'Final shape: {df.shape}')
     return df
 
 
@@ -111,12 +137,13 @@ def preprocess_sentiment_data(df: pd.DataFrame) -> pd.DataFrame:
     - Encode categorical columns
     - Normalize customer ratings
 
+    Args:
+        df: Input sentiment DataFrame
+
     Returns:
         Cleaned pandas DataFrame
     """
-    print(f'Original shape: {df.shape}')
     df = remove_duplicates(df)
-    print(f'After removing duplicates: {df.shape}')
     df = handle_missing_values(df)
     df = encode_categorical(df, [
         'gender', 'age_group', 'region',
@@ -125,7 +152,6 @@ def preprocess_sentiment_data(df: pd.DataFrame) -> pd.DataFrame:
     ])
     if 'customer_rating' in df.columns:
         df = normalize_ratings(df, 'customer_rating')
-    print(f'Final shape: {df.shape}')
     return df
 
 
@@ -134,6 +160,12 @@ def preprocess(df: pd.DataFrame) -> pd.DataFrame:
     Full preprocessing pipeline. Detects dataset type and applies
     appropriate preprocessing. Returns clean DataFrame ready for
     model input.
+
+    Args:
+        df: Input DataFrame
+
+    Returns:
+        Preprocessed DataFrame
     """
     columns = df.columns.str.lower()
     if 'authors' in columns or 'publisher' in columns:
