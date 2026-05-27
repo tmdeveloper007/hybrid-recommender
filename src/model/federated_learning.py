@@ -4,11 +4,14 @@ Enables training recommendation models (Collaborative Filtering)
 across decentralized client nodes without centralizing raw user interactions.
 """
 
+import logging
 import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
 from sklearn.decomposition import TruncatedSVD
 from src.model.collaborative_model import CollaborativeRecommender
+
+logger = logging.getLogger(__name__)
 
 
 class FederatedClient:
@@ -60,6 +63,7 @@ class FederatedClient:
         """
         updates = {}
         if self.user_factor is None:
+            logger.debug(f"Client {self.user_id}: user_factor is None, skipping updates")
             return updates
 
         for title, rating in self.private_ratings.items():
@@ -74,6 +78,8 @@ class FederatedClient:
 
             # Update vector = error * user_factor - regularization * item_factor
             updates[title] = error * self.user_factor - reg * v_i
+
+        logger.debug(f"Client {self.user_id}: computed {len(updates)} item updates")
         return updates
 
 
