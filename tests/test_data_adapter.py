@@ -144,11 +144,12 @@ class TestAdaptData:
             "Title": ["Book A", "Book B"],
             "Description": ["Desc A", "Desc B"],
             "authors": ["Author A", "Author B"],
-            "rating": [4.5, 3.5]
+            "rating": [4.5, 3.5],
+            "user_id": ["u1", "u2"]
         })
         adapted, meta = adapt_data(df)
         assert "title" in adapted.columns
-        assert meta["has_user_data"] is False
+        assert meta["has_user_data"] is True
 
     def test_adapt_ratings_data(self):
         """Test adaptation of ratings data."""
@@ -166,7 +167,9 @@ class TestAdaptData:
         """Test adaptation of sentiment data."""
         df = pd.DataFrame({
             "sentiment": ["positive", "negative", "neutral"],
-            "customer_rating": [5.0, 1.0, 3.0]
+            "customer_rating": [5.0, 1.0, 3.0],
+            "user_id": ["u1", "u2", "u3"],
+            "item_id": ["i1", "i2", "i3"]
         })
         adapted, meta = adapt_data(df)
         assert "sentiment" in adapted.columns
