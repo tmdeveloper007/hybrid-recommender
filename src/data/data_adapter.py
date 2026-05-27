@@ -125,26 +125,32 @@ def preprocess_sentiment_data(df):
     return df
 
 
-def detect_column(columns, keywords):
+def detect_column(columns, keywords) -> str | None:
     """Detect a column by matching against a list of keywords (case-insensitive)."""
     # First pass: exact matches
     for key in keywords:
         for col in columns:
             if col.lower() == key:
                 return col
-                
+
     # Second pass: substring matches
     for key in keywords:
         for col in columns:
             if key in col.lower():
                 return col
-                
+
     return None
 
 
-def validate_dataframe(df):
+def validate_dataframe(df) -> bool:
     """
     Validate DataFrame.
+
+    Returns:
+        True if valid
+
+    Raises:
+        ValueError: If DataFrame is empty or has fewer than 2 columns
     """
 
     if df.empty:
@@ -158,12 +164,12 @@ def validate_dataframe(df):
     return True
 
 
-def _has_blank_values(series):
+def _has_blank_values(series) -> bool:
     """Return True when a column contains nulls or blank string values."""
     return series.isna().any() or series.astype(str).str.strip().eq('').any()
 
 
-def validate_recommender_inputs(df, user_col=None, item_id_col=None, title_col=None, rating_col=None):
+def validate_recommender_inputs(df, user_col=None, item_id_col=None, title_col=None, rating_col=None) -> bool:
     """
     Validate columns that feed the recommender pipeline before normalization.
     """
@@ -202,9 +208,16 @@ def validate_recommender_inputs(df, user_col=None, item_id_col=None, title_col=N
     return True
 
 
-def read_file(path_or_buffer, file_format=None):
+def read_file(path_or_buffer, file_format=None) -> pd.DataFrame:
     """
     Read CSV or JSON into DataFrame.
+
+    Args:
+        path_or_buffer: File path or buffer object
+        file_format: 'csv' or 'json', auto-detected from extension if None
+
+    Returns:
+        DataFrame containing the loaded data
     """
 
     if file_format is None and isinstance(path_or_buffer, str):
