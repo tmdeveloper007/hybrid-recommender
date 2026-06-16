@@ -2096,7 +2096,7 @@ def get_recommendations(
         "count": len(recs),
         "results": recs,
         "recommendations": recs,
-        "weights": active_hybrid.get_weights(),
+        "weights": hybrid_model.get_weights(),
         "explain": explain,
         "target_catalog": target_catalog,
         "model_version": model_version or ACTIVE_MODEL_VERSION,
@@ -2504,7 +2504,6 @@ def update_weights(
 @app.get("/api/items")
 def list_items(page: int = Query(1, ge=1), limit: int = Query(20, ge=1, le=100)):
     sb = get_supabase()
-    limit = per_page
     offset = (page - 1) * limit
     result = sb.table('products') \
         .select('id, title, description, category, rating, avg_sentiment, review_count, reviews') \
@@ -2945,8 +2944,6 @@ async def reset_user_preferences(request: Request):
         _clear_response_cache()
 
 
-        global global_redis_client
-      
         if _redis_client is not None:
             try:
                 # Find keys matching this user's recommendation cache pattern
