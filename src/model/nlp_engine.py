@@ -5,6 +5,7 @@ Uses NLTK VADER for lightweight sentiment analysis on user review text.
 import nltk
 import numpy as np
 import pandas as pd
+from typing import List, Optional
 
 # Download VADER lexicon (only on first run)
 try:
@@ -24,12 +25,17 @@ def analyze_sentiment(text: str) -> float:
         text (str): The raw text string or user review to analyze.
 
     Returns:
-        float: The calculated VADER compound sentiment score bounded between 
-            -1.0 (highly negative) and 1.0 (highly positive). Returns 0.0 
+        float: The calculated VADER compound sentiment score bounded between
+            -1.0 (highly negative) and 1.0 (highly positive). Returns 0.0
             if the string is empty or invalid.
     """
-    if not text or not isinstance(text, str) or text.strip() == '':
+    if not isinstance(text, str):
         return 0.0
+
+    text = text.strip()
+    if not text:
+        return 0.0
+
     scores = _analyzer.polarity_scores(text)
     return scores['compound']
 
@@ -94,7 +100,7 @@ def aggregate_sentiment_by_item(df: pd.DataFrame, item_col: str = 'title') -> pd
             'avg_sentiment' (float mean score), and 'review_count' (integer total).
     """
     if 'sentiment_score' not in df.columns:
-        df = batch_analyze(df)
+        df = batch_analyze(df, text_col='review_text')
 
     agg = df.groupby(item_col).agg(
         avg_sentiment=('sentiment_score', 'mean'),
@@ -104,7 +110,7 @@ def aggregate_sentiment_by_item(df: pd.DataFrame, item_col: str = 'title') -> pd
     return agg
 
 
-def compute_product_sentiment(reviews):
+def compute_product_sentiment(reviews: List[str]) -> Optional[float]:
     """Dynamically compute average sentiment for unindexed items during pipeline fallbacks.
 
     Cleans empty structures out of runtime text arrays, providing an isolated fallback 
@@ -128,9 +134,8 @@ def compute_product_sentiment(reviews):
     if not valid_reviews:
         return None
 
-    scores = [analyze_sentiment(review) for review in valid_reviews]
-
-    if not scores:
-        return None
-
-    return round(float(np.mean(scores)), 4)
+    scores = np.array(
+    [analyze_sentiment(review) for review in valid_reviews]
+)
+    
+    return round(scores.mean(), 4)
